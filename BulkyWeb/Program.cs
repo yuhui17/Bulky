@@ -1,7 +1,10 @@
 using BulkyBook.DataAccess.Data;
 using BulkyBook.DataAccess.Repositories.IRepository;
 using BulkyBook.DataAccess.Repositories;
+using BulkyBook.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +12,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentity<IdentityUser,IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+//set some identity route 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = $"/Identity/Account/Login";
+    options.LogoutPath = $"/Identity/Account/Logout";
+    options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
+});
+
+builder.Services.AddRazorPages(); //for identity pages, since identity pages all are using Razor
+//builder.Services.AddRazorPages().AddRazorRuntimeCompilation(); //*this will break some css*,using AddRazorRuntimeCompilation to solve the hot reload problem
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 var app = builder.Build();
 
@@ -26,7 +42,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthorization();
+app.UseAuthentication(); //check username,password valid or not
+app.UseAuthorization(); //based on the role, authorize the permission to access specific page
+
+app.MapRazorPages(); //for identity pages
 
 app.MapControllerRoute(
     name: "default",
