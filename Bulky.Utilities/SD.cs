@@ -31,6 +31,10 @@ namespace BulkyBook.Utilities
         public const string PaymentStatusDelayPayment = "ApprovedForDelayPayment";
         public const string PaymentStatusRejected = "Rejected";
         #endregion
+
+        #region SESSION
+        public const string SessionCart = "SessionShoppingCart";
+        #endregion
     }
 
 

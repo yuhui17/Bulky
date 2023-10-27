@@ -46,7 +46,7 @@ namespace BulkyBookWeb.Areas.Identity.Pages.Account
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
             IUnitOfWork unitOfWork)
-            
+
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -110,7 +110,7 @@ namespace BulkyBookWeb.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
-        
+
             public string? Role { get; set; }
             public IEnumerable<SelectListItem> RoleList { get; set; }
 
@@ -121,7 +121,7 @@ namespace BulkyBookWeb.Areas.Identity.Pages.Account
             public string? State { get; set; }
             public string? PostalCode { get; set; }
             public string? PhoneNumber { get; set; }
-            public int? CompanyId {  get; set; }
+            public int? CompanyId { get; set; }
             [ValidateNever]
             public IEnumerable<SelectListItem> CompanyList { get; set; }
 
@@ -173,15 +173,15 @@ namespace BulkyBookWeb.Areas.Identity.Pages.Account
                 user.Name = Input.Name;
                 user.State = Input.State;
                 user.PostalCode = Input.PostalCode;
-                user.PhoneNumber = Input.PhoneNumber; 
+                user.PhoneNumber = Input.PhoneNumber;
 
-                if(Input.Role == SD.Role_User_Company)
+                if (Input.Role == SD.Role_User_Company)
                 {
                     user.CompanyId = Input.CompanyId;
                 }
-                 
+
                 //start to add user here
-                var result = await _userManager.CreateAsync(user, Input.Password); 
+                var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
                 {
@@ -215,7 +215,14 @@ namespace BulkyBookWeb.Areas.Identity.Pages.Account
                     }
                     else
                     {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        if (User.IsInRole(SD.Role_Admin))
+                        {
+                            TempData["success"] = "New User Created Successfully";
+                        }
+                        else
+                        {
+                            await _signInManager.SignInAsync(user, isPersistent: false);
+                        }
                         return LocalRedirect(returnUrl);
                     }
                 }

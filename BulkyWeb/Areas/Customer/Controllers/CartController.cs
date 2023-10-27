@@ -192,6 +192,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
                     _unitOfWork.OrderHeader.UpdateStatus(id, SD.StatusApproved, SD.PaymentStatusApproved);
                     _unitOfWork.Save();
                 }
+                HttpContext.Session.Clear();
             }
 
             //payment success, clear all item in shopping cart for that user
@@ -222,6 +223,9 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             {
                 //remove from cart
                 _unitOfWork.ShoppingCart.Remove(cardFromDb);
+
+                //minus shopping cart count after remove the item
+                HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == cardFromDb.ApplicationUserId).Count() - 1);
             }
             else
             {
@@ -238,6 +242,10 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             var cardFromDb = _unitOfWork.ShoppingCart.Get(u => u.Id == cartId);
 
             _unitOfWork.ShoppingCart.Remove(cardFromDb);
+
+            //minus shopping cart count after remove the item
+            HttpContext.Session.SetInt32(SD.SessionCart, _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == cardFromDb.ApplicationUserId).Count() - 1);
+
             _unitOfWork.Save();
 
             return RedirectToAction(nameof(Index));
