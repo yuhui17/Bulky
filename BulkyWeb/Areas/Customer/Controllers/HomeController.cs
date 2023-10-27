@@ -1,5 +1,6 @@
 using BulkyBook.DataAccess.Repositories.IRepository;
 using BulkyBook.Models;
+using BulkyBook.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -45,18 +46,18 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             shoppingCart.ApplicationUserId = userId;
 
             //get latest shopping cart
-            ShoppingCart cartFromDb = _unitOfWork.ShoppingCart.Get(u=>u.ApplicationUserId == userId && u.ProductId == shoppingCart.ProductId);
+            ShoppingCart cartFromDb = _unitOfWork.ShoppingCart.Get(u => u.ApplicationUserId == userId && u.ProductId == shoppingCart.ProductId);
 
-            if(cartFromDb != null)
+            if (cartFromDb != null)
             {
                 //shopping cart exists
                 cartFromDb.Count += shoppingCart.Count;
-                _unitOfWork.ShoppingCart.Update(cartFromDb); 
+                _unitOfWork.ShoppingCart.Update(cartFromDb);
             }
             else
             {
                 //add shopping card record
-                _unitOfWork.ShoppingCart.Add(shoppingCart); 
+                _unitOfWork.ShoppingCart.Add(shoppingCart);
             }
             TempData["success"] = "Cart updated successfully!";
 
@@ -74,6 +75,31 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        void SetShoppingCartCount()
+        {
+            var claimsIdentity = (ClaimsIdentity)User.Identity;
+
+            //if logged in
+            if (claimsIdentity.IsAuthenticated)
+            {
+                var userId = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+                //get latest shopping cart
+                ShoppingCart cartFromDb = _unitOfWork.ShoppingCart.Get(u => u.ApplicationUserId == userId);
+
+                if (cartFromDb != null)
+                {
+                    //set cart count
+                    ViewData["CartItemCount"] = cartFromDb.Count.ToString();
+                }
+                else
+                {
+                    //empty cart
+                    ViewData["CartItemCount"] = "0";
+                }
+            }
         }
     }
 }
