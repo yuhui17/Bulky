@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Stripe;
 using Microsoft.Extensions.DependencyInjection;
+using BulkyBook.DataAccess.DbInitializer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +48,7 @@ builder.Services.AddRazorPages(); //for identity pages, since identity pages all
 //builder.Services.AddRazorPages().AddRazorRuntimeCompilation(); //*this will break some css*,using AddRazorRuntimeCompilation to solve the hot reload problem
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 
 var app = builder.Build();
 
@@ -68,6 +70,7 @@ app.UseRouting();
 app.UseAuthentication(); //check username,password valid or not
 app.UseAuthorization(); //based on the role, authorize the permission to access specific page
 app.UseSession();
+SeedDatabase(); //to create roles and default admin 
 
 app.MapRazorPages(); //for identity pages
 
@@ -76,3 +79,13 @@ app.MapControllerRoute(
     pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+
+void SeedDatabase()
+{
+    using(var scope = app.Services.CreateScope())
+    {
+        var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+        dbInitializer.Initialize();
+    }
+}
