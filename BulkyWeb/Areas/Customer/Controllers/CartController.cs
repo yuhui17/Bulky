@@ -139,7 +139,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
                 //stripe logic
                 //link for documentation: https://stripe.com/docs/api/checkout/sessions/create?lang=dotnet
 
-                var domain = "https://localhost:44333/";
+                var domain = Request.Scheme + "://" + Request.Host.Value + "/";
                 var options = new SessionCreateOptions
                 {
                     SuccessUrl = domain + $"Customer/Cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
@@ -203,7 +203,7 @@ namespace BulkyBookWeb.Areas.Customer.Controllers
             //    $"<p>New Order Created - {orderHeader.Id}</p>");
 
             //payment success, clear all item in shopping cart for that user
-            List<ShoppingCart> shoppingCarts = _unitOfWork.ShoppingCart.GetAll(u =>u.ApplicationUserId ==orderHeader.ApplicationUserId).ToList();
+            List<ShoppingCart> shoppingCarts = _unitOfWork.ShoppingCart.GetAll(u => u.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
 
             _unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
             _unitOfWork.Save();
