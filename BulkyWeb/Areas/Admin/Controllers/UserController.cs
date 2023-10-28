@@ -33,14 +33,48 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
         {
             List<ApplicationUser> objUserList = _db.ApplicationUsers.Include(u => u.Company).ToList();
 
+            var userRoles = _db.UserRoles.ToList();
+            var roles = _db.Roles.ToList();
+
+            foreach (var user in objUserList)
+            {
+                var roleId = userRoles.FirstOrDefault(u => u.UserId == user.Id).RoleId; //get user roleId 
+                user.Role = roles.FirstOrDefault(u => u.Id == roleId).Name; //use roleId to get role name and assign to this obj
+
+                if (user.Company == null)
+                {
+                    user.Company = new()
+                    {
+                        Name = ""
+                    };
+                }
+            }
 
             return Json(new { data = objUserList });
         }
 
-        [HttpDelete]
-        public IActionResult Delete(int? userId)
+        [HttpPost]
+        public IActionResult LockUnlock([FromBody]string userId)
         {
-            return Json(new { success = false, message = "Delete Successful" });
+            var objFromDb = _db.ApplicationUsers.FirstOrDefault(u => u.Id == userId);
+            if(objFromDb == null)
+            {
+                return Json(new { success = false, message = "Error while Locking/Unlocking" });
+            }
+
+            if(objFromDb.LockoutEnd != null && objFromDb.LockoutEnd > DateTime.Now)
+            {
+                //user is currently locked and we need to unlock them
+                objFromDb.LockoutEnd = DateTime.Now;
+            }
+            else
+            {
+                //unlock
+                objFromDb.LockoutEnd = DateTime.Now.AddYears(1000);
+            }
+            _db.SaveChanges();
+
+            return Json(new { success = true, message = "Operation Successful" });
         }
 
         #endregion
