@@ -1,0 +1,72 @@
+﻿@model RoleManagementVM
+
+<div class="container">
+    <div class="card shadow border-0 mt-4">
+        <div class="card-header bg-primary bg-gradient ml-0 py-3 mt-4">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white py-2">Manage User Role</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="container m-1">
+            <div class="card-body p-4 ">
+                <form method="post" class="row">
+                    <input hidden asp-for="ApplicationUser.Id" />
+                    <div class="row">
+                        <div class="col-md-12 border border-1 p-4">
+                            <div class="form-floating mb-3 col-md-12">
+                                <input asp-for="ApplicationUser.Name" readonly class="form-control" />
+                                <label asp-for="ApplicationUser.Name" class="m2-2 text-muted">Name</label>
+                            </div>
+                            <div class="form-floating py-2 col-md-12">
+                                <select asp-for="ApplicationUser.Role" asp-items="@Model.RoleList" class="form-select"></select>
+                            </div>
+                            @{
+                                var companyVisible = "display:none;";
+                            }
+                            @if (Model.ApplicationUser.Role == SD.Role_User_Company)
+                            {
+                                companyVisible = "display:block;";
+                            }
+
+                            <div class="form-floating py-2 col-md-12">
+                                <select asp-for="ApplicationUser.CompanyId" style="@companyVisible" asp-items="@Model.CompanyList" class="form-select"></select>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary form-control">Update Role</button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button asp-action="Index" class="btn btn-outline-primary form-control">Back to List</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#ApplicationUser_Role').change(function () {
+                var selection = $('#ApplicationUser_Role option:selected').text();
+                if (selection === 'Company') {
+                    $('#ApplicationUser_CompanyId').show();
+                }
+                else {
+                    $('#ApplicationUser_CompanyId').hide();
+                }
+            });
+        });
+    </script>
+}
