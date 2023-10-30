@@ -34,6 +34,12 @@ builder.Services.AddAuthentication().AddFacebook(options =>
     options.AppId = "300596689415900";
     options.AppSecret = "36507bb9e417ccfb33d13a50064f1080";
 });
+//configure external login for microsoft account
+builder.Services.AddAuthentication().AddMicrosoftAccount(options =>
+{
+    options.ClientId = "d8477365-97e8-4498-ac7e-a459ef74e0cb";
+    options.ClientSecret = "euE8Q~ki-rmeVXZm37sWwD3gST3j-ZwvLvsRoaCk";
+});
 
 //configure Session
 builder.Services.AddDistributedMemoryCache();

@@ -16,13 +16,16 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
     [Authorize(Roles = SD.Role_Admin)]
     public class UserController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly UserManager<IdentityUser> _userManager;
-        
-        public UserController(ApplicationDbContext db, UserManager<IdentityUser> userManager)
+        private readonly RoleManager<IdentityRole> _roleManager;
+
+
+        public UserController(IUnitOfWork unitOfWork, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
         {
-            _db = db;
+            _unitOfWork = unitOfWork;
             _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public IActionResult Index()
@@ -33,18 +36,16 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
 
         public IActionResult RoleManagement(string userId)
         {
-            //user roleId belong to this user
-            string RoleId = _db.UserRoles.FirstOrDefault(u => u.UserId == userId).RoleId;
 
             RoleManagementVM RoleVM = new RoleManagementVM()
             {
-                ApplicationUser = _db.ApplicationUsers.FirstOrDefault(u => u.Id == userId),
-                RoleList = _db.Roles.Select(i => new SelectListItem
+                ApplicationUser = _unitOfWork.ApplicationUser.Get(u => u.Id == userId, includeProperties:"Company"),
+                RoleList = _roleManager.Roles.Select(i => new SelectListItem
                 {
                     Text= i.Name,
                     Value=i.Name
                 }),
-                CompanyList = _db.Companies.Select(i => new SelectListItem
+                CompanyList = _unitOfWork.Company.GetAll().Select(i => new SelectListItem
                 {
                     Text = i.Name,
                     Value = i.Id.ToString()
@@ -52,7 +53,7 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
             };
 
             //get the role name assign to Application user
-            RoleVM.ApplicationUser.Role = _db.Roles.FirstOrDefault(u=> u.Id == RoleId).Name; 
+            RoleVM.ApplicationUser.Role = _userManager.GetRolesAsync(_unitOfWork.ApplicationUser.Get(u => u.Id == userId)).GetAwaiter().GetResult().FirstOrDefault();
 
             return View(RoleVM);
         }
@@ -61,14 +62,13 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
         public IActionResult RoleManagement(RoleManagementVM roleManagementVM)
         {
             //user roleId belong to this user
-            string RoleId = _db.UserRoles.FirstOrDefault(u => u.UserId == roleManagementVM.ApplicationUser.Id).RoleId;
-            string oldRole = _db.Roles.FirstOrDefault(u => u.Id == RoleId).Name;
+            string oldRole = _userManager.GetRolesAsync(_unitOfWork.ApplicationUser.Get(u => u.Id == roleManagementVM.ApplicationUser.Id)).GetAwaiter().GetResult().FirstOrDefault();
+
+            ApplicationUser applicationUser = _unitOfWork.ApplicationUser.Get(u => u.Id == roleManagementVM.ApplicationUser.Id);
 
             //different from old role, update here
             if (!(roleManagementVM.ApplicationUser.Role == oldRole))
             {
-                ApplicationUser applicationUser = _db.ApplicationUsers.FirstOrDefault(u => u.Id == roleManagementVM.ApplicationUser.Id);
-
                 //selected role is company assign the company id to the user
                 if(roleManagementVM.ApplicationUser.Role == SD.Role_User_Company) 
                 {
@@ -81,9 +81,9 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
                 {
                     applicationUser.CompanyId = null;
                 }
-
-                _db.ApplicationUsers.Update(applicationUser);
-                _db.SaveChanges();
+                
+                _unitOfWork.ApplicationUser.Update(applicationUser);
+                _unitOfWork.Save();
 
                 _userManager.RemoveFromRoleAsync(applicationUser, oldRole).GetAwaiter().GetResult(); //remove old role 
                 _userManager.AddToRoleAsync(applicationUser, roleManagementVM.ApplicationUser.Role).GetAwaiter().GetResult(); //assign new role
@@ -91,15 +91,12 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
             else
             {
                 //to handle, change company ID
-                if (roleManagementVM.ApplicationUser.Role == SD.Role_User_Company)
+                if (oldRole == SD.Role_User_Company && applicationUser.CompanyId != roleManagementVM.ApplicationUser.CompanyId)
                 {
-                    ApplicationUser applicationUser = _db.ApplicationUsers.FirstOrDefault(u => u.Id == roleManagementVM.ApplicationUser.Id);
-                    if (applicationUser.CompanyId != roleManagementVM.ApplicationUser.CompanyId)
-                    {
-                        applicationUser.CompanyId = roleManagementVM.ApplicationUser.CompanyId;
-                    }
-                    _db.ApplicationUsers.Update(applicationUser);
-                    _db.SaveChanges();
+                    applicationUser.CompanyId = roleManagementVM.ApplicationUser.CompanyId;
+
+                    _unitOfWork.ApplicationUser.Update(applicationUser);
+                    _unitOfWork.Save();
                 }
             }
 
@@ -110,15 +107,11 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            List<ApplicationUser> objUserList = _db.ApplicationUsers.Include(u => u.Company).ToList();
-
-            var userRoles = _db.UserRoles.ToList();
-            var roles = _db.Roles.ToList();
+            List<ApplicationUser> objUserList = _unitOfWork.ApplicationUser.GetAll(includeProperties:"Company").ToList();
 
             foreach (var user in objUserList)
             {
-                var roleId = userRoles.FirstOrDefault(u => u.UserId == user.Id).RoleId; //get user roleId 
-                user.Role = roles.FirstOrDefault(u => u.Id == roleId).Name; //use roleId to get role name and assign to this obj
+                user.Role = _userManager.GetRolesAsync(user).GetAwaiter().GetResult().FirstOrDefault();
 
                 if (user.Company == null)
                 {
@@ -135,7 +128,7 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult LockUnlock([FromBody]string userId)
         {
-            var objFromDb = _db.ApplicationUsers.FirstOrDefault(u => u.Id == userId);
+            var objFromDb = _unitOfWork.ApplicationUser.Get(u => u.Id == userId);
             if(objFromDb == null)
             {
                 return Json(new { success = false, message = "Error while Locking/Unlocking" });
@@ -151,7 +144,8 @@ namespace BulkyBookWeb.Areas.Admin.Controllers
                 //unlock
                 objFromDb.LockoutEnd = DateTime.Now.AddYears(1000);
             }
-            _db.SaveChanges();
+            _unitOfWork.ApplicationUser.Update(objFromDb);
+            _unitOfWork.Save();
 
             return Json(new { success = true, message = "Operation Successful" });
         }

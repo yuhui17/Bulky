@@ -30,12 +30,12 @@ namespace BulkyBook.DataAccess.Repositories
                 objFromDb.Description = obj.Description;
                 objFromDb.CategoryId = obj.CategoryId;
                 objFromDb.Author = obj.Author;
-
-                //only update when new image is attached
-                if (obj.ImageUrl != null)
-                {
-                    objFromDb.ImageUrl= obj.ImageUrl;
-                }
+                objFromDb.ProductImages = obj.ProductImages;
+                ////only update when new image is attached
+                //if (obj.ImageUrl != null)
+                //{
+                //    objFromDb.ImageUrl= obj.ImageUrl;
+                //}
             }
         }
     }

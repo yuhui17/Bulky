@@ -2,7 +2,7 @@
 
 <form method="post" enctype="multipart/form-data">
     <input asp-for="Product.Id" hidden />
-    <input asp-for="Product.ImageUrl" hidden />
+    @* <input asp-for="Product.ImageUrl" hidden /> *@
     <div class="border p-3 my-4">
         <div class="row pb-2">
             @* change label, according to action[update/create] *@
@@ -62,13 +62,23 @@
                     <span asp-validation-for="Product.CategoryId" class="text-danger"></span>
                 </div>
                 <div class="mb-3 row p-1">
-                    <label asp-for="Product.ImageUrl" class="p-0"></label>
-                    <input type="file" name="file" class="form-control" />
-                    <span asp-validation-for="Product.ImageUrl" class="text-danger"></span>
+                    <label asp-for="Product.ProductImages" class="p-0"></label>
+                    <input type="file" name="files" class="form-control" multiple />
                 </div>
             </div>
             <div class="col-2">
-                <img src="@Model.Product.ImageUrl" width="100%" style="border-radius: 5px; border: 1px solid black"/>
+                @if (Model.Product.ProductImages != null)
+                {
+                    foreach (var image in Model.Product.ProductImages)
+                    {
+                        <div class="border p-1 m-2 text-center">
+                            <img src="@image.ImageUrl" width="100%" style="border-radius: 5px; border: 1px solid black" />
+                            <a asp-action="DeleteImage" class="btn btn-danger m-1" asp-route-imageId="@image.Id">
+                                <i class="bi bi-trash-fill"></i> Delete
+                            </a>
+                        </div>
+                    }
+                }
             </div>
         </div>
 

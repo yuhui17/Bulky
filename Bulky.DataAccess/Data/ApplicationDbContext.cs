@@ -19,6 +19,7 @@ namespace BulkyBook.DataAccess.Data
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<OrderHeader> OrderHeaders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<ProductImage> ProductImages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,7 +46,7 @@ namespace BulkyBook.DataAccess.Data
                     Price50 = 12.99,
                     Price100 = 9.99,
                     CategoryId = 1,
-                    ImageUrl=""
+                    //ImageUrl=""
                 },
                 new Product
                 {
@@ -59,7 +60,7 @@ namespace BulkyBook.DataAccess.Data
                     Price50 = 16.99,
                     Price100 = 14.99,
                     CategoryId = 1,
-                    ImageUrl = ""
+                    //ImageUrl = ""
                 },
                 new Product
                 {
@@ -73,7 +74,7 @@ namespace BulkyBook.DataAccess.Data
                     Price50 = 19.99,
                     Price100 = 17.99,
                     CategoryId = 1,
-                    ImageUrl = ""
+                    //ImageUrl = ""
                 },
                 new Product
                 {
@@ -87,7 +88,7 @@ namespace BulkyBook.DataAccess.Data
                     Price50 = 9.99,
                     Price100 = 7.99,
                     CategoryId = 1,
-                    ImageUrl = ""
+                    //ImageUrl = ""
                 },
                 new Product
                 {
@@ -101,7 +102,7 @@ namespace BulkyBook.DataAccess.Data
                     Price50 = 27.99,
                     Price100 = 24.99,
                     CategoryId = 1,
-                    ImageUrl = ""
+                    //ImageUrl = ""
                 }
                 );
 
