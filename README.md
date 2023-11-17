@@ -19,3 +19,24 @@ User interface:
 -enter 4242424242 for all field for test mode
 ![image](https://github.com/yuhui17/Bulky/assets/88811702/8f2e2b25-05c3-4299-98e7-8a21d59ace90)
 
+What I have learned from this project?
+-Learn structure of ASP NET MVC Core (.NET 8) Project
+-Learn structure of ASP NET Core (.NET 8) Razor Project
+-Learn basic fundamentals of ASP NET MVC Core (.NET 8)
+-Build 2 Projects throughout the course
+-Integrate Identity Framework and learn how to add more fields to Users
+-Interact with Razor class library for Identity
+-Integrate Entity Framework along with code first migrations
+-Sessions in ASP NET Core (.NET 8)
+-Custom Tag Helpers in ASP NET Core (.NET 8)
+-View Components and Partial Views in ASP NET Core
+-Bootstrap v5
+-Authentication and Authorization in ASP NET Core (.NET 8)
+-Google and Facebook Authentication/Login
+-Role Management in ASP NET Core Identity
+-Email notifications
+-TempData in ASP NET Core (.NET 8)
+-Stripe Payment Integrations
+-Repository Pattern to Access Database
+-Seed Database Migrations Automatically
+-Deploying website on Microsoft Azure
